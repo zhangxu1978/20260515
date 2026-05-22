@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4a90d9">
+  <title>待办清单</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>待办清单</h1>
+      <div id="sync-status"></div>
+      <button id="sync-btn" title="同步">⟳</button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="pending">待办 <span id="pending-count">0</span></button>
+      <button class="tab" data-tab="done">已办 <span id="done-count">0</span></button>
+    </div>
+
+    <main>
+      <ul id="todo-list" class="todo-list"></ul>
+      <div id="empty-state" class="empty-state">暂无事项</div>
+    </main>
+
+    <div class="input-bar">
+      <input type="text" id="todo-input" placeholder="添加新的待办事项..." autocomplete="off">
+      <button id="add-btn">添加</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI科普大讲堂</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.5s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            color: white;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .slide-title {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #a0aec0;
+        }
+
+        .content-section {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+
+        .card-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #e2e8f0;
+        }
+
+        .highlight-text {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background: rgba(124, 58, 237, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .nav-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .nav-dot.active {
+            background: #00d4ff;
+            transform: scale(1.3);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .nav-dot:hover {
+            background: rgba(0, 212, 255, 0.5);
+        }
+
+        .control-buttons {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .speaker-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+            z-index: 100;
+        }
+
+        .speaker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.6);
+        }
+
+        .speaker-btn.active {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4); }
+            50% { box-shadow: 0 5px 30px rgba(0, 212, 255, 0.8); }
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            transition: width 0.5s ease;
+            z-index: 100;
+        }
+
+        .page-number {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 100;
+        }
+
+        .intro-section {
+            text-align: center;
+        }
+
+        .intro-title {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .intro-subtitle {
+            font-size: 1.8rem;
+            color: #a0aec0;
+            animation: fadeInUp 1s ease 0.3s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .topic-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .topic-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .topic-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .topic-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid #fbbf24;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 20px;
+        }
+
+        .success-box {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 4px solid #22c55e;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 20px;
+            }
+            
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .intro-title {
+                font-size: 2.5rem;
+            }
+            
+            .nav-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="page-number" id="pageNumber">1 / 9</div>
+    
+    <button class="speaker-btn" id="speakerBtn" onclick="toggleSpeak()">
+        🔊
+    </button>
+    
+    <audio id="audio0"></audio>
+    <audio id="audio1"></audio>
+    <audio id="audio2"></audio>
+    <audio id="audio3"></audio>    
+    <audio id="audio4"></audio>
+    <audio id="audio5"></audio>
+    <audio id="audio6"></audio>
+    <audio id="audio7"></audio>
+    <audio id="audio8"></audio>
+    
+    <div class="control-buttons">
+        <button class="nav-btn" onclick="prevSlide()">‹</button>
+        <button class="nav-btn" onclick="nextSlide()">›</button>
+    </div>
+
+    <div class="presentation" id="presentation">
+        <div class="slide active">
+            <div class="intro-section">
+                <h1 class="slide-title intro-title">AI科普大讲堂</h1>
+                <p class="intro-subtitle">探索人工智能的无限可能</p>
+                <div class="topics-grid">
+                    <div class="topic-item"><div class="topic-icon">🧠</div><div class="topic-name">大模型</div></div>
+                    <div class="topic-item"><div class="topic-icon">📚</div><div class="topic-name">上下文</div></div>
+                    <div class="topic-item"><div class="topic-icon">🛠️</div><div class="topic-name">工具</div></div>
+                    <div class="topic-item"><div class="topic-icon">🔗</div><div class="topic-name">MCP</div></div>
+                    <div class="topic-item"><div class="topic-icon">💡</div><div class="topic-name">技能</div></div>
+                    <div class="topic-item"><div class="topic-icon">📝</div><div class="topic-name">记忆</div></div>
+                    <div class="topic-item"><div class="topic-icon">🤖</div><div class="topic-name">Agent</div></div>
+                    <div class="topic-item"><div class="topic-icon">🎯</div><div class="topic-name">总结</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">🧠 大模型</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">国际大模型厂商</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">Google</div>
+                            <div class="list-item">OpenAI</div>
+                            <div class="list-item">Anthropic</div>
+                            <div class="list-item">Meta</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <div class="card-title">国内大模型厂商</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">智普</div>
+                            <div class="list-item">DeepSeek</div>
+                            <div class="list-item">月之暗面</div>
+                            <div class="list-item">MiniMax</div>
+                            <div class="list-item">小米</div>
+                            <div class="list-item">字节跳动</div>
+                            <div class="list-item">阿里巴巴</div>
+                            <div class="list-item">腾讯商汤美团</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">大模型种类</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">推理模型</div>
+                            <div class="list-item">生图模型</div>
+                            <div class="list-item">视频模型</div>
+                            <div class="list-item">声音模型</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">📚 上下文工程</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">核心概念</div>
+                    <div class="card-text">
+                        <span class="highlight-text">所有对于大模型的应用都是上下文工程。</span>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">对话控制</div>
+                    <div class="card-text">
+                        对话都是客户端控制的。用户通过精心设计的提示词引导模型生成特定的输出。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">上下文的组成</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">系统关键词</div>
+                            <div class="list-item">对话历史</div>
+                            <div class="list-item">工具调用</div>
+                            <div class="list-item">温度参数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong>关键点：</strong>精心设计的上下文可以引导AI产生更精准、更有用的输出。
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">🛠️ 工具调用</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">核心能力</div>
+                    <div class="card-text">
+                        <span class="highlight-text">工具调用能力是AI Agent的核心能力。</span>它使AI能够与外部系统交互，获取实时数据，执行特定任务。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">工具实现</div>
+                    <div class="card-text">
+                        所有工具都需要被调用一方实现。这意味着开发者需要编写API接口，让AI能够通过标准化的方式调用这些功能。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">靠谱的工具调用示例：天气查询</div>
+                    <div class="card-text">
+                        用户问："北京今天天气怎么样？"，AI调用天气API，获取实时天气数据，然后用自然语言回复用户。
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>不靠谱的工具调用示例：人生模拟器</strong>
+                    <p>复杂的人生决策模拟需要大量参数和复杂逻辑，AI可能产生幻觉或错误的建议。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">🔗 MCP模型上下文协议</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">MCP是什么</div>
+                    <div class="card-text">
+                        MCP是工具集合。它为AI模型提供了统一的方式来访问各种工具和服务。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">核心价值</div>
+                    <div class="card-text">
+                        <span class="highlight-text">给别人使用我的工具的能力，让我获取使用别人工具的能力。</span>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">最终目的</div>
+                    <div class="card-text">
+                        <span class="highlight-text">不要重复开发轮子。</span>通过标准化的工具调用协议，开发者可以共享和复用工具，提高开发效率。
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong>MCP的优势：</strong>促进工具生态的发展，让AI Agent能够访问更多高质量的工具服务。
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">💡 技能</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">技能的定义</div>
+                    <div class="card-text">
+                        <span class="highlight-text">技能是工作流。</span>它是可以复用的行为模板，将多个工具调用和逻辑组合成一个完整的任务流程。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">技能的特点</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">可复用性</div>
+                            <div class="list-item">标准化</div>
+                            <div class="list-item">组合性</div>
+                            <div class="list-item">可扩展</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">技能的应用</div>
+                    <div class="card-text">
+                        通过组合多个技能，AI Agent可以完成复杂的任务。例如：旅游规划技能可以组合搜索、天气查询、预订等工具。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">📝 大模型记忆</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">短期记忆</div>
+                    <div class="card-text">
+                        <span class="highlight-text">短期记忆是上下文窗口。</span>模型在对话过程中利用上下文窗口来记住当前对话的内容，但这种记忆是临时的，对话结束后就会消失。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">长期记忆</div>
+                    <div class="card-text">
+                        <span class="highlight-text">长期记忆是文件和数据库。</span>通过将信息存储到外部系统，AI可以在不同对话之间保持持久的记忆。
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>重要提示：</strong>所有的记忆都需要注入上下文才会生效。也就是说，存储的信息必须被重新加载到对话上下文中，模型才能使用这些信息。
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">记忆应用场景</div>
+                    <div class="card-text">
+                        <div class="list-container">
+                            <div class="list-item">用户偏好记忆</div>
+                            <div class="list-item">历史对话回顾</div>
+                            <div class="list-item">知识库检索</div>
+                            <div class="list-item">任务状态跟踪</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">🤖 Agent智能代理</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">通用Agent</div>
+                    <div class="card-text">
+                        通用Agent都是给个人用的，例如豆包。它们提供一站式的AI服务，可以处理各种日常任务。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">Agent架构</div>
+                    <div class="card-text">
+                        <span class="highlight-text">通用Agent是专用Agent的入口。</span>简单任务用工具直接完成，复杂任务由专用Agent处理。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">编程Agent</div>
+                    <div class="card-text">
+                        <span class="highlight-text">编程Agent是最好的Agent。</span>原因：结构化程度最高，产生幻觉的空间小。人类对编程这项工作的工程化能力强。
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>为什么Agent干不好活？</strong>
+                    <p>1.注意力缺失：上下文越长，问题越严重。</p>
+                    <p>2.模型幻觉：模型以为的正确其实未必正确。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h1 class="slide-title">🎯 总结：企业应用Agent</h1>
+            <div class="content-section">
+                <div class="content-card">
+                    <div class="card-title">基础设施建设</div>
+                    <div class="card-text">
+                        <span class="highlight-text">建立基础设施应该着眼于工具。</span>强大的工具生态是Agent发挥作用的基础。
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-title">专用Agent优先</div>
+                    <div class="card-text">
+                        <span class="highlight-text">从专业角度或者模型能力角度来说都要专用Agent。</span>专用Agent在特定领域表现更出色。
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong>核心要点总结：</strong>
+                    <p>大模型提供基础能力，上下文工程引导输出，工具扩展能力边界，MCP促进工具共享，技能组合工作流，记忆增强持续性，Agent实现自主任务执行。</p>
+                </div>
+
+                <div class="content-card" style="text-align: center; margin-top: 30px;">
+                    <div class="card-text" style="font-size: 1.5rem;">
+                        <span class="highlight-text">感谢观看！</span>
+                    </div>
+                    <div class="card-text" style="margin-top: 10px; color: #a0aec0;">
+                        AI科普大讲堂 - 探索人工智能的无限可能
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-container" id="navContainer"></div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const navDots = [];
+        let currentSlide = 0;
+        let isSpeaking = false;
+        let speechSynthesis = window.speechSynthesis;
+
+        const pageNumber = document.getElementById('pageNumber');
+        const progressBar = document.getElementById('progressBar');
+        const speakerBtn = document.getElementById('speakerBtn');
+
+        for (let i = 0; i < slides.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot';
+            dot.addEventListener('click', () => goToSlide(i));
+            document.getElementById('navContainer').appendChild(dot);
+            navDots.push(dot);
+        }
+
+        function updateNavDots() {
+            navDots.forEach((dot, index) => {
+                dot.className = `nav-dot ${index === currentSlide ? 'active' : ''}`;
+            });
+        }
+
+        function updateProgress() {
+            pageNumber.textContent = `${currentSlide + 1} / ${slides.length}`;
+            progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+        }
+
+        function goToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            stopSpeak();
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            updateNavDots();
+            updateProgress();
+        }
+
+        function nextSlide() {
+            goToSlide((currentSlide + 1) % slides.length);
+        }
+
+        function prevSlide() {
+            goToSlide((currentSlide - 1 + slides.length) % slides.length);
+        }
+
+        const slideTexts = [
+            "欢迎来到AI科普大讲堂，探索人工智能的无限可能。今天我们将讨论大模型、上下文、工具、MCP、技能、记忆、Agent等核心概念。",
+            "大模型是人工智能领域的核心技术。国际上主要的大模型厂商包括Google、OpenAI、Anthropic和Meta。国内则有智普、DeepSeek、月之暗面、MiniMax、小米、字节跳动、阿里巴巴等公司。大模型主要分为推理模型、生图模型、视频模型和声音模型四大类。",
+            "所有对于大模型的应用都是上下文工程。对话都是客户端控制的，用户通过精心设计的提示词引导模型生成特定的输出。上下文主要由系统关键词、对话历史、工具调用和温度参数组成。精心设计的上下文可以引导AI产生更精准、更有用的输出。",
+            "工具调用能力是AIAgent的核心能力，它使AI能够与外部系统交互，获取实时数据，执行特定任务。所有工具都需要被调用一方实现。靠谱的工具调用示例包括天气查询，用户询问天气时，AI调用天气API获取实时数据后回复用户。而像人生模拟器这样的复杂任务则不太适合工具调用，因为AI可能产生幻觉或错误的建议。",
+            "MCP是模型上下文协议，它是工具集合，为AI模型提供了统一的方式来访问各种工具和服务。MCP的核心价值在于给别人使用我的工具的能力，让我获取使用别人工具的能力，最终目的是不要重复开发轮子。通过标准化的工具调用协议，开发者可以共享和复用工具，提高开发效率。",
+            "技能是工作流，是可以复用的行为模板，将多个工具调用和逻辑组合成一个完整的任务流程。技能具有可复用性、标准化、组合性和可扩展性等特点。通过组合多个技能，AIAgent可以完成复杂的任务，例如旅游规划技能可以组合搜索、天气查询、预订等工具。",
+            "大模型的记忆分为短期记忆和长期记忆。短期记忆是上下文窗口，模型在对话过程中利用上下文窗口来记住当前对话的内容，但这种记忆是临时的。长期记忆是文件和数据库，通过将信息存储到外部系统，AI可以在不同对话之间保持持久的记忆。需要注意的是，所有的记忆都需要注入上下文才会生效。",
+            "Agent是智能代理。通用Agent都是给个人用的，例如豆包。通用Agent是专用Agent的入口，简单任务用工具直接完成，复杂任务由专用Agent处理。编程Agent是最好的Agent，因为它结构化程度最高，产生幻觉的空间小。Agent工作时可能会遇到注意力缺失和模型幻觉等问题。",
+            "总结来说，企业应用Agent时应该建立以工具为核心的基础设施，从专业角度或者模型能力角度来说都应该使用专用Agent。大模型提供基础能力，上下文工程引导输出，工具扩展能力边界，MCP促进工具共享，技能组合工作流，记忆增强持续性，Agent实现自主任务执行。感谢观看AI科普大讲堂。"
+        ];
+
+        let currentAudio = null;
+
+        async function toggleSpeak() {
+            const audio = document.getElementById('audio' + currentSlide);
+            const text = slideTexts[currentSlide];
+
+            if (currentAudio === audio && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    speakerBtn.classList.add('active');
+                    speakerBtn.textContent = '⏹️';
+                } else {
+                    currentAudio.pause();
+                    speakerBtn.classList.remove('active');
+                    speakerBtn.textContent = '🔊';
+                }
+                return;
+            }
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            speakerBtn.classList.add('active');
+            speakerBtn.textContent = '⏹️';
+
+            try {
+                const response = await fetch('http://localhost:3101/api/speech/synthesize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model: 'speech-2.8-hd',
+                        voice: 'female-tianmei',
+                        format: 'mp3',
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('TTS API error');
+                }
+
+                const data = await response.json();
+                const audioUrl = 'http://localhost:3101' + data.urls[0];
+
+                audio.src = audioUrl;
+                currentAudio = audio;
+
+                audio.onended = () => {
+                    speakerBtn.classList.remove('active');
+                    speakerBtn.textContent = '🔊';
+                };
+
+                audio.onerror = () => {
+                    speakerBtn.classList.remove('active');
+                    speakerBtn.textContent = '🔊';
+                    alert('音频播放失败，请检查TTS服务是否运行');
+                };
+
+                await audio.play();
+
+            } catch (error) {
+                console.error('Error:', error);
+                speakerBtn.classList.remove('active');
+                speakerBtn.textContent = '🔊';
+                alert('语音合成失败，请确保TTS服务在localhost:3101运行中');
+            }
+        }
+
+        function stopSpeak() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            speakerBtn.classList.remove('active');
+            speakerBtn.textContent = '🔊';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'Escape') stopSpeak();
+        });
+
+        updateNavDots();
+        updateProgress();
+    </script>
+</body>
+</html>
